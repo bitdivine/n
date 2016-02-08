@@ -686,7 +686,7 @@ version_number(){
 }
 
 semantic_version(){ # TODO: match semantic version ranges against the installed versions of node.
-	echo "$1"
+	semver="$1" node -e "var n=require('n-api'), semver=require('semver'); console.log(n.ls().reduce(function(ans,candidate){return semver.satisfies(candidate,process.env.semver)?candidate:ans;},''));"
 }
 
 #
