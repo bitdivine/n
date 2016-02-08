@@ -165,6 +165,8 @@ display_help() {
     n lts                          Install or activate the latest LTS node release
     n <version>                    Install node <version>
     n use <version> [args ...]     Execute node <version> with [args ...]
+    n npm <version> [args ...]     Execute npm with node <version> and [args ...]
+    n with <version> [command ...] Execute command with the given version of node at the front of the PATH.
     n bin <version>                Output bin path for <version>
     n rm <version ...>             Remove the given version(s)
     n --latest                     Output the latest node version available
@@ -675,6 +677,18 @@ display_remote_versions() {
   echo
 }
 
+version_number(){
+  case "$1" in
+  engine)  # Like latest or stable, this specifies the version in package.json:
+           semantic_version "$(node -e "console.log(require('./package.json').engines.node)")" ;;
+  *)       semantic_version "$1" ;;
+  esac
+}
+
+semantic_version(){ # TODO: match semantic version ranges against the installed versions of node.
+	echo "$1"
+}
+
 #
 # Handle arguments.
 #
@@ -697,6 +711,8 @@ else
       -a|--arch) shift; set_arch $1;; # set arch and continue
       bin|which) display_bin_path_for_version $2; exit ;;
       as|use) shift; execute_with_version $@; exit ;;
+      with)  shift; version="$(version_number "$1")" ; shift ; PATH="$(dirname "$(n bin "$version")"):$PATH" "$@" ; exit ;;
+      npm)   shift; version="$(version_number "$1")" ; shift ; PATH="$(dirname "$(n bin "$version")"):$PATH" npm "$@" ; exit ;;
       rm|-) shift; remove_versions $@; exit ;;
       latest) install_latest; exit ;;
       stable) install_stable; exit ;;
